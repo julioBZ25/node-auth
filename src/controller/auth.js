@@ -2,7 +2,10 @@ import { user as User } from "../model/User.js";
 import { errorValidation } from "../utils/messages.js";
 import { loginValidation, registerValidation } from "../utils/validations.js";
 import bcrypt from "bcrypt";
-import { SALTROUNDS } from "../config.js";
+import jwt from "jsonwebtoken";
+import { SALTROUNDS, TOKEN_SECRET } from "../config.js";
+
+const { sign } = jwt;
 
 export const registerController = async (req, res) => {
   //Validate the data
@@ -56,5 +59,7 @@ export const loginController = async (req, res) => {
       .status(400)
       .send("You have entered an invalid username or password.");
 
-  res.send("Logged in");
+  const token = sign({ _id: user._id }, TOKEN_SECRET);
+
+  res.header("auth-token", token).send({ token });
 };
