@@ -12,7 +12,7 @@ A simple API auth with node.js and express.js
 - [x]  User Model
 - [x]  Validations (Joi)
 - [x]  Register Route
-- [ ]  Login Route
+- [X]  Login Route with JWT 
 - [ ]  Add Proyect Model
 - [ ]  Deploy API
 - [ ]  More to add...
