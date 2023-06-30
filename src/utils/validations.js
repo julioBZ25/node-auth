@@ -1,5 +1,9 @@
-import {joiSchema} from "../model/User.js";
+import { loginSchema, registerSchema } from "../model/User.js";
 
-export const registerValidation = data => {
-  return joiSchema.validate(data, {abortEarly: false})
-}
+export const registerValidation = (data) => {
+  return registerSchema.validate(data, { abortEarly: false });
+};
+
+export const loginValidation = (data) => {
+  return loginSchema.validate(data, { abortEarly: false });
+};
