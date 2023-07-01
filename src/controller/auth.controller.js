@@ -1,6 +1,10 @@
 import { user as User } from "../model/User.js";
 import { errorValidation } from "../utils/messages.js";
-import { loginValidation, registerValidation } from "../utils/validations.js";
+import {
+  loginValidation,
+  registerValidation,
+  updateValidation,
+} from "../utils/validations.js";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import { SALTROUNDS, TOKEN_SECRET } from "../config.js";
@@ -28,7 +32,7 @@ export const registerController = async (req, res) => {
 
   try {
     const savedUser = await user.save();
-    res.send({
+    res.status(201).send({
       user: {
         id: savedUser._id,
         name: savedUser.name,
@@ -47,19 +51,33 @@ export const loginController = async (req, res) => {
 
   //user already in the database?
   const user = await User.findOne({ email: req.body.email });
+  console.log(user);
   if (!user)
     return res
       .status(400)
-      .send("You have entered an invalid username or password.");
+      .send({ message: "You have entered an invalid username or password" });
 
   //user's password validation
   const validPassword = await bcrypt.compare(req.body.password, user.password);
   if (!validPassword)
     return res
       .status(400)
-      .send("You have entered an invalid username or password.");
+      .send({ message: "You have entered an invalid username or password." });
 
   const token = sign({ _id: user._id }, TOKEN_SECRET);
 
-  res.header("auth-token", token).send({ token });
+  res.status(200).send({ token });
+};
+
+export const updateProfileController = async (req, res) => {
+  //Only name
+  const { error } = updateValidation(req.body);
+  if (error) return res.status(400).send(errorValidation(error.details));
+
+  const user = await User.findByIdAndUpdate(req.user._id, req.body, {
+    new: true,
+  });
+  res.status(200).send({
+    message: "“profile successfully updated",
+  });
 };

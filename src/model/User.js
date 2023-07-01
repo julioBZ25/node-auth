@@ -43,3 +43,7 @@ export const loginSchema = Joi.object({
     .email({ minDomainSegments: 2, tlds: { allow: ["com", "pe", "edu"] } }),
   password: Joi.string().min(6).required(),
 });
+
+export const updateSchema = Joi.object({
+  name: Joi.string().min(5).max(30).required(),
+});
