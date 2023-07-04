@@ -9,7 +9,7 @@ import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import { SALTROUNDS, TOKEN_SECRET } from "../config.js";
 
-const { sign } = jwt;
+const { sign, verify } = jwt;
 
 export const registerController = async (req, res) => {
   //Validate the data
@@ -64,9 +64,22 @@ export const loginController = async (req, res) => {
       .status(400)
       .send({ message: "You have entered an invalid username or password." });
 
-  const token = sign({ _id: user._id }, TOKEN_SECRET);
+  const accessToken = sign(
+    { _id: user._id, refreshToken: false },
+    TOKEN_SECRET,
+    {
+      expiresIn: "1m",
+    }
+  );
+  const refreshToken = sign(
+    { _id: user._id, refreshToken: true },
+    TOKEN_SECRET,
+    {
+      expiresIn: "7d",
+    }
+  );
 
-  res.status(200).send({ token });
+  res.status(200).send({ accessToken, refreshToken });
 };
 
 export const updateProfileController = async (req, res) => {
@@ -74,10 +87,42 @@ export const updateProfileController = async (req, res) => {
   const { error } = updateValidation(req.body);
   if (error) return res.status(400).send(errorValidation(error.details));
 
-  const user = await User.findByIdAndUpdate(req.user._id, req.body, {
+  const user = await User.findByIdAndUpdate(req.token._id, req.body, {
     new: true,
   });
   res.status(200).send({
-    message: "“profile successfully updated",
+    user: {
+      name: user.name,
+      email: user.email,
+    },
   });
+};
+
+export const getProfileController = async (req, res) => {
+  const user = await User.findById(req.token._id);
+
+  res.status(200).send({
+    user: {
+      name: user.name,
+      email: user.email,
+    },
+  });
+};
+
+export const refreshTokenController = async (req, res) => {
+  const accessToken = sign(
+    { _id: req.token._id, refreshToken: false },
+    TOKEN_SECRET,
+    {
+      expiresIn: "1m",
+    }
+  );
+  const refreshToken = sign(
+    { _id: req.token._id, refreshToken: true },
+    TOKEN_SECRET,
+    {
+      expiresIn: "7d",
+    }
+  );
+  res.status(200).send({ accessToken, refreshToken });
 };
